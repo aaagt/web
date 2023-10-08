@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Хэндлер для обработки конкретных подключений
+ */
 public class SocketHandler implements Runnable {
 
     final Socket socket;
@@ -25,6 +28,13 @@ public class SocketHandler implements Runnable {
         this.validPaths = Settings.VALID_PATHS;
     }
 
+    /**
+     * Распарсить HTTP запрос
+     *
+     * @param in чиатель запроса
+     * @return Распарсенный запрос
+     * @throws IOException
+     */
     private Request parseRequest(BufferedReader in) throws IOException {
         final var firstRequestLine = in.readLine();
         final var parts = firstRequestLine.split(" ");
@@ -63,6 +73,9 @@ public class SocketHandler implements Runnable {
         return new Request(method, route, headers, body);
     }
 
+    /**
+     * Старт обработки запроса
+     */
     @Override
     public void run() {
         try (
@@ -128,11 +141,14 @@ public class SocketHandler implements Runnable {
         } catch (IOException e) {
             System.err.println(e);
         } finally {
-            close();
+            closeSocket();
         }
     }
 
-    private void close() {
+    /**
+     * Закрыть сокет
+     */
+    private void closeSocket() {
         try {
             socket.close();
         } catch (IOException e) {

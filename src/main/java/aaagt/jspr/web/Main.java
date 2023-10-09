@@ -1,5 +1,10 @@
 package aaagt.jspr.web;
 
+import aaagt.jspr.web.server.Handler;
+import aaagt.jspr.web.server.Server;
+import aaagt.jspr.web.server.Settings;
+import aaagt.jspr.web.server.request.RequestData;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
@@ -13,7 +18,7 @@ public class Main {
 
         // добавление хендлеров (обработчиков)
         server.addHandler("GET", "/messages", new Handler() {
-            public void handle(Request request, BufferedOutputStream responseStream) {
+            public void handle(RequestData request, BufferedOutputStream responseStream) {
                 try {
                     final var content = """
                             [
@@ -37,7 +42,7 @@ public class Main {
                 }
             }
         });
-        server.addHandler("POST", "/messages", (Request request, BufferedOutputStream responseStream) -> {
+        server.addHandler("POST", "/messages", (RequestData request, BufferedOutputStream responseStream) -> {
             try {
                 final var content = request.body().getBytes();
                 responseStream.write((

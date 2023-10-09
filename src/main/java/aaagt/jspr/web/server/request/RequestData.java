@@ -1,9 +1,9 @@
-package aaagt.jspr.web;
+package aaagt.jspr.web.server.request;
 
 import java.util.List;
 
-public record Request(
+public record RequestData(
         String method,
-        String route,
+        String path,
         List<String> headers,
         String body) {}

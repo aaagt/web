@@ -1,4 +1,4 @@
-package aaagt.jspr.web;
+package aaagt.jspr.web.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;

@@ -1,10 +1,17 @@
 package aaagt.jspr.web.server.request;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RequestReader {
 
@@ -68,11 +75,24 @@ public class RequestReader {
         }
         System.out.println(method);
 
-        final var path = requestLine[1];
-        if (!path.startsWith("/")) {
-            return new Request(null, RequestErrors.PATH_STARTS_NOT_FROM_SLASH);
+        // Парсим строку запроса
+        final URI uri;
+        try {
+            uri = new URI(requestLine[1]);
+        } catch (URISyntaxException e) {
+            return new Request(null, RequestErrors.WRONG_URI_SINTAX);
         }
+
+        // Забираем путь запроса
+        final var path = uri.getPath();
         System.out.println(path);
+
+        // Забираем параметры запроса
+        final var rawParams = URLEncodedUtils.parse(uri, StandardCharsets.UTF_8);
+        final var param = rawParams.stream()
+                .peek(p -> System.out.println(p.getName() + " - " + p.getValue()))
+                .collect(Collectors.groupingBy(NameValuePair::getName,
+                        Collectors.mapping(NameValuePair::getValue, Collectors.toList())));
 
         // ищем заголовки
         final var headersDelimiter = new byte[]{'\r', '\n', '\r', '\n'};
@@ -94,7 +114,7 @@ public class RequestReader {
         final var body = readBody(in, method, headersDelimiter, headers);
         System.out.println(body);
 
-        final var requestData = new RequestData(method, path, headers, body);
+        final var requestData = new RequestData(method, path, param, headers, body);
         return new Request(requestData, RequestErrors.NONE);
     }
 

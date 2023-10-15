@@ -4,9 +4,13 @@ import aaagt.jspr.web.server.Handler;
 import aaagt.jspr.web.server.Server;
 import aaagt.jspr.web.server.Settings;
 import aaagt.jspr.web.server.request.RequestData;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,12 +24,19 @@ public class Main {
         server.addHandler("GET", "/messages", new Handler() {
             public void handle(RequestData request, BufferedOutputStream responseStream) {
                 try {
-                    final var content = """
-                            [
-                                {"message": "Some messsage"},
-                                {"message": "Another message"}
-                            ]
-                            """.getBytes();
+                    final var gson = new Gson();
+                    final Type typeObject = new TypeToken<HashMap>() {}.getType();
+                    final var params = gson.toJson(request.queryParams(), typeObject);
+
+                    final var content = String.format("""
+                            {
+                                "messages":[
+                                    {"message": "Some messsage"},
+                                    {"message": "Another message"}
+                                ],
+                                "query_params": %s
+                            }
+                            """, params).getBytes();
                     responseStream.write((
                             "HTTP/1.1 200 OK\r\n" +
                                     "Content-Type: application/json\r\n" +

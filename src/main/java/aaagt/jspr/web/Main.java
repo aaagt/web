@@ -72,6 +72,34 @@ public class Main {
             }
         });
 
+        // Получить данные из формы в формате x-www-form-urlencoded
+        server.addHandler("POST", "/forms.html", (RequestData request, BufferedOutputStream responseStream) -> {
+            try {
+                final var params = request.getPostParams();
+                System.out.println(params);
+
+                final var content = """
+                        {
+                            "message": "Logged in",
+                            "login": "%s"
+                        }
+                        """.formatted(params.get("login").getFirst()).getBytes();
+                responseStream.write((
+                        "HTTP/1.1 200 OK\r\n" +
+                                "Content-Type: application/json\r\n" +
+                                "Content-Length: " + content.length + "\r\n" +
+                                "Connection: close\r\n" +
+                                "\r\n"
+                ).getBytes());
+                responseStream.write(content);
+                responseStream.flush();
+
+                System.out.printf("logged in: %s\n", request.body());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         System.out.println("Starting server");
         server.start();
 
